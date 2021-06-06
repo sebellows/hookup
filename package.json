@@ -1,0 +1,56 @@
+{
+  "name": "hookup",
+  "version": "0.1.0",
+  "description": "Yet another data mapping package",
+  "main": "lib/cjs/index",
+  "module": "lib/esm/index",
+  "types": "lib/typescript/index.d.ts",
+  "source": "src/index",
+  "author": "Sean Bellows",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "tsc --noEmit && eslint \"**/*.{js,ts,tsx}\"",
+    "build": "run-s build:esbuild build:ts copy:ts:* clean:ts",
+    "build:esbuild": "node -r esbuild-register scripts/build.ts",
+    "build:ts": "tsc --emitDeclarationOnly --project tsconfig.lib.json --rootDir src",
+    "clean": "rimraf lib",
+    "clean:ts": "rimraf lib/typescript",
+    "copy:ts:cjs": "cpx 'lib/typescript/**/*.{d.ts,d.ts.map}' lib/cjs",
+    "copy:ts:es": "cpx 'lib/typescript/**/*.{d.ts,d.ts.map}' lib/esm",
+    "prebuild": "yarn clean && yarn generate",
+    "type-check": "tsc -b",
+    "watch": "run-p watch:*",
+    "watch:cjs": "tsc --preserveWatchOutput -w --module CommonJS --outDir lib/cjs --project tsconfig.lib.json --rootDir src --target ES5",
+    "watch:es": "tsc --preserveWatchOutput -w --module ES6 --outDir lib/esm --project tsconfig.lib.json --rootDir src --target ES6"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.14.4",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.1",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "chalk": "^4.1.1",
+    "cpx": "^1.5.0",
+    "esbuild": "^0.12.6",
+    "esbuild-jest": "^0.5.0",
+    "esbuild-register": "^2.5.0",
+    "eslint": "^7.28.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "globby": "^11.0.3",
+    "jest": "^27.0.4",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.3.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebellows/hookup.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sebellows/hookup/issues"
+  }
+}
