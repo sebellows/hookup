@@ -1,0 +1,21 @@
+.DS_Store
+
+# Directories
+
+/lib
+/node_modules
+/tmp
+
+# IDEs
+
+.idea
+
+# NPM & Yarn.js
+
+node_modules/
+.npmrc
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
