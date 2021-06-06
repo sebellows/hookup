@@ -1,0 +1,31 @@
+{
+  "include": ["./src", "./scripts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "lib": ["esnext"],
+    "target": "esnext",
+
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitUseStrict": false,
+    "noStrictGenericChecks": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": false
+  }
+}
