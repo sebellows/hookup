@@ -1,5 +1,4 @@
 import { hookup } from '.'
-import { ValidationErrors } from './types'
 import { Validators } from './validators'
 
 const testSource = {
@@ -42,10 +41,14 @@ const testSchema = {
   },
 }
 
-describe('hookup', () => {
-  it('Should generate a schema from a source', () => {
-    const data = hookup(testSchema, testSource) as Record<keyof typeof testSchema, any>
+let data: Record<keyof typeof testSchema, any>
 
+describe('hookup', () => {
+  beforeAll(() => {
+    data = hookup(testSchema, testSource) as Record<keyof typeof testSchema, any>
+  })
+
+  it('Should generate a schema from a source', () => {
     expect(data.name).toEqual('Miro')
   })
 })

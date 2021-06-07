@@ -1,5 +1,38 @@
-import { AsyncValidatorFn, FieldValue, ValidationErrors, ValidatorFn } from './types'
-import { getFieldValue, isEmpty, isNumber } from './utils'
+import {
+  AsyncValidatorFn,
+  FieldValue,
+  GenericValidatorFn,
+  ValidationErrors,
+  ValidatorFn,
+} from './types'
+import { coerceToPromise, getFieldValue, isEmpty, isNumber, isPresent } from './utils'
+
+/**
+ * Validator & Validators are adapted from Angular's Forms package.
+ *
+ * @license MIT {@link https://angular.io/license}
+ * @copyright Google LLC All Rights Reserved.
+ * @see {@link https://github.com/angular/angular}
+ */
+
+export interface Validator {
+  /**
+   * Method that performs synchronous validation against the provided control.
+   */
+  validate(input: FieldValue): ValidationErrors | null
+
+  /**
+   * Registers a callback function to call when the validator inputs change.
+   */
+  registerOnValidatorChange?(fn: () => void): void
+}
+
+export interface AsyncValidator extends Validator {
+  /**
+   * Method that performs async validation against the provided control.
+   */
+  validate(control: FieldValue): Promise<ValidationErrors | null> | Promise<ValidationErrors | null>
+}
 
 export class Validators {
   static async: Record<string, AsyncValidatorFn | Promise<ValidationErrors | null>> = {
@@ -39,6 +72,30 @@ export class Validators {
     return nullValidator(_input)
   }
 
+  static mergeErrors(arrayOfErrors: (ValidationErrors | null)[]): ValidationErrors | null {
+    let res: { [key: string]: any } = {}
+
+    // Not using Array.reduce here due to a Chrome 80 bug
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1049982
+    arrayOfErrors.forEach((errors: ValidationErrors | null) => {
+      res = errors != null ? { ...res!, ...errors } : res!
+    })
+
+    return Object.keys(res).length === 0 ? null : res
+  }
+  /**
+   * Accepts a list of async validators of different possible shapes (`AsyncValidator` and
+   * `AsyncValidatorFn`), normalizes the list (converts everything to `AsyncValidatorFn`) and merges
+   * them into a single validator function.
+   */
+  static composeAsyncValidators(
+    validators: Array<AsyncValidator | AsyncValidatorFn>
+  ): AsyncValidatorFn | null {
+    return validators != null
+      ? Validators.composeAsync(Validators.normalizeValidators<AsyncValidatorFn>(validators))
+      : null
+  }
+
   static mergeValidators(
     ...validators: ValidatorFn[]
   ): (value: FieldValue) => ValidationErrors[] | null {
@@ -51,6 +108,76 @@ export class Validators {
         errors.push(validator(value))
         return errors
       }, [] as ValidationErrors[])
+  }
+
+  static executeValidators<V extends GenericValidatorFn>(
+    input: FieldValue,
+    validators: V[]
+  ): ReturnType<V>[] {
+    return validators.map((validator) => validator(input))
+  }
+
+  static isValidatorFn<V>(validator: V | Validator | AsyncValidator): validator is V {
+    return !(validator as Validator).validate
+  }
+
+  /**
+   * Given the list of validators that may contain both functions as well as classes, return the list
+   * of validator functions (convert validator classes into validator functions). This is needed to
+   * have consistent structure in validators list before composing them.
+   *
+   * @param validators The set of validators that may contain validators both in plain function form
+   *     as well as represented as a validator class.
+   */
+  static normalizeValidators<V>(validators: (V | Validator | AsyncValidator)[]): V[] {
+    return validators.map((validator) => {
+      return Validators.isValidatorFn<V>(validator)
+        ? validator
+        : (((input: FieldValue) => validator.validate(input)) as unknown as V)
+    })
+  }
+
+  /**
+   * Merges synchronous validators into a single validator function.
+   */
+  static compose(validators: (ValidatorFn | null | undefined)[] | null): ValidatorFn | null {
+    if (!validators) return null
+    const presentValidators: ValidatorFn[] = validators.filter(isPresent) as any
+    if (presentValidators.length == 0) return null
+
+    return function (input: FieldValue) {
+      return Validators.mergeErrors(
+        Validators.executeValidators<ValidatorFn>(input, presentValidators)
+      )
+    }
+  }
+
+  /**
+   * Accepts a list of validators of different possible shapes (`Validator` and `ValidatorFn`),
+   * normalizes the list (converts everything to `ValidatorFn`) and merges them into a single
+   * validator function.
+   */
+  static composeValidators(validators: Array<Validator | ValidatorFn>): ValidatorFn | null {
+    return validators != null
+      ? Validators.compose(Validators.normalizeValidators<ValidatorFn>(validators))
+      : null
+  }
+
+  /**
+   * Merges asynchronous validators into a single validator function.
+   */
+  static composeAsync = (validators: (AsyncValidatorFn | null)[]): AsyncValidatorFn | null => {
+    if (!validators) return null
+    const presentValidators: AsyncValidatorFn[] = validators.filter(isPresent) as any
+    if (presentValidators.length == 0) return null
+
+    return async function (input: FieldValue) {
+      const observables = Validators.executeValidators<AsyncValidatorFn>(
+        input,
+        presentValidators
+      ).map(coerceToPromise)
+      return Promise.all(observables).then(Validators.mergeErrors)
+    }
   }
 }
 
