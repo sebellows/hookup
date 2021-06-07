@@ -2,60 +2,23 @@ import { Constructor, FieldValue } from './types'
 
 type TypeCheckerFn = (obj: unknown) => boolean
 
-interface TypeCheckers {
-  isArray: TypeCheckerFn
-  isAsyncFunction: TypeCheckerFn
-  isBoolean: TypeCheckerFn
-  isFunction: TypeCheckerFn
-  isNull: TypeCheckerFn
-  isNumber: TypeCheckerFn
-  isPlainObject: TypeCheckerFn
-  isString: TypeCheckerFn
-  isUndefined: TypeCheckerFn
-}
-
-const types = [
-  'array',
-  'asyncFunction',
-  'boolean',
-  'function',
-  'null',
-  'number',
-  ['object', 'PlainObject'],
-  'string',
-  'undefined',
-] as const
-
 export const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k)
 
-export const startCase = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
-
-export const getTypeFn =
+const getTypeFn =
   (t: string): TypeCheckerFn =>
   (obj: unknown) =>
     Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === t
 
-export const {
-  isArray,
-  isAsyncFunction,
-  isBoolean,
-  isFunction,
-  isNull,
-  isNumber,
-  isPlainObject,
-  isString,
-  isUndefined,
-} = types.reduce((acc, curr) => {
-  if (Array.isArray(curr)) {
-    acc[`is${curr[1]}`] = getTypeFn(curr[0])
-  } else {
-    acc[`is${curr}`] = getTypeFn(curr as string)
-  }
-  return acc
-}, {} as TypeCheckers)
+export const isAsyncFunction = (o: unknown) => getTypeFn('asyncfunction')(o)
+export const isBoolean = (o: unknown) => getTypeFn('boolean')(o)
+export const isFunction = (o: unknown) => getTypeFn('function')(o)
+export const isNull = (o: unknown) => getTypeFn('null')(o)
+export const isNumber = (o: unknown) => getTypeFn('number')(o)
+export const isPlainObject = (o: unknown) => getTypeFn('object')(o)
+export const isString = (o: unknown) => getTypeFn('string')(o)
+export const isUndefined = (o: unknown) => getTypeFn('undefined')(o)
 
 export const isObject = (o: unknown) => typeof o === 'object'
-
 export const isNil = (o: unknown) => isNull(o) || isUndefined(o)
 
 export const isEmptyObject = <T extends object = object>(o: T) => {

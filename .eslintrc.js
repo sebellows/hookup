@@ -57,7 +57,7 @@ module.exports = {
       ],
       rules: {
         ...common.rules,
-        '@typescript-eslint/explicit-module-boundary-types': 'error',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
 
         // Disable rules
         '@typescript-eslint/interface-name-prefix': 0,
