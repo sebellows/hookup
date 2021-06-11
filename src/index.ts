@@ -18,6 +18,7 @@ function resolveSchema<Schema extends object = object, Source extends object = o
   return Object.entries(schema).reduce((obj, [k, v]) => {
     let value: any
     const actionType = getActionType(k, v)
+    // let hasValidationErrors = false
 
     switch (actionType) {
       case FieldAccessorType.FieldFn:
@@ -35,7 +36,7 @@ function resolveSchema<Schema extends object = object, Source extends object = o
 
       case FieldAccessorType.FieldSelector:
         const fieldSelector: FieldSelector = v as FieldSelector
-        let inputValue = get(source, fieldSelector.path)
+        let inputValue = get(source, fieldSelector.path as string)
 
         if ('transform' in fieldSelector) {
           // ex: (x) => x.toUpperCase()
@@ -49,9 +50,11 @@ function resolveSchema<Schema extends object = object, Source extends object = o
           const validatorFn = Validators.mergeValidators(...validators)
           const validation = validatorFn(inputValue)
           if (validation) {
-            console.warn(`Validation Error: ${JSON.stringify(validation)}`)
+            value = validation
+            break
           }
         }
+
         value = inputValue
         break
 
@@ -66,6 +69,7 @@ function resolveSchema<Schema extends object = object, Source extends object = o
     }
 
     obj[k] = value
+
     return obj
   }, {})
 }

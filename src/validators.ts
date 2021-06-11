@@ -83,6 +83,7 @@ export class Validators {
 
     return Object.keys(res).length === 0 ? null : res
   }
+
   /**
    * Accepts a list of async validators of different possible shapes (`AsyncValidator` and
    * `AsyncValidatorFn`), normalizes the list (converts everything to `AsyncValidatorFn`) and merges

@@ -39,7 +39,8 @@ export const isEmptyObject = <T extends object = object>(o: T) => {
   return true
 }
 
-export const isEmpty = (o: unknown) => isNil(o) || isEmptyObject(o as object) || lengthIsZero(o)
+export const isEmpty = (o: unknown) =>
+  !isNumber(o) && (isNil(o) || isEmptyObject(o as object) || lengthIsZero(o))
 
 export const isConstructor = <T = any>(o: Constructor<T>) => {
   try {
@@ -155,6 +156,6 @@ export const isFieldSelector = (value: unknown): boolean => {
   return (
     isPlainObject(value) &&
     value.hasOwnProperty('path') &&
-    (value.hasOwnProperty('validator') || value.hasOwnProperty('transform'))
+    (value.hasOwnProperty('validators') || value.hasOwnProperty('transform'))
   )
 }
