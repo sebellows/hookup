@@ -130,6 +130,13 @@ export class Field {
     // }
   }
 
+  // TODO: implement this
+  updateValue() {
+    // update the value
+    // run all validators
+    // emit update event using EventEmitter
+  }
+
   /**
    * The function that is used to determine the validity of this control synchronously.
    */
